@@ -1,10 +1,8 @@
 import arbitor from "../src/arbiter/arbiter.js";
-import { useAppContext } from "../src/contexts/Context.js";
-import { generateCandidates } from "../src/reducer/actions/move.js";
 
 export const getCharacter = (file) => String.fromCharCode(file + 96);
 export const createPosition = () => {
-  const position = new Array(8).fill("").map((x) => new Array(8).fill(""));
+  const position = new Array(8).fill("").map(() => new Array(8).fill(""));
 
   for (let i = 0; i < 8; i++) {
     position[6][i] = "bp";
@@ -76,7 +74,7 @@ export const createPosition = () => {
 };
 
 export const copyPosition = (position) => {
-  const newPosition = new Array(8).fill("").map((x) => new Array(8).fill(""));
+  const newPosition = new Array(8).fill("").map(() => new Array(8).fill(""));
 
   for (let rank = 0; rank < position.length; rank++) {
     for (let file = 0; file < position[0].length; file++) {
@@ -138,7 +136,39 @@ export const getNewMoveNotation = ({
 
   note += getCharacter(y + 1) + (x + 1);
 
+  const positionAfterMove = arbitor.performMove({
+    position,
+    piece,
+    rank,
+    file,
+    x,
+    y,
+  });
+
+  // console.log(position, positionAfterMove);
+  console.log(
+    arbitor.isPlayerInCheck({
+      positionAfterMove: positionAfterMove,
+      position: position,
+      player: piece[0] === "w" ? "b" : "w",
+    }),
+  );
+
   if (promotesTo) note += "=" + promotesTo.toUpperCase();
+
+  const mated = arbitor.isCheckMate(
+    positionAfterMove,
+    piece[0] === "w" ? "b" : "w",
+    "none",
+  );
+  const checked = arbitor.isPlayerInCheck({
+    positionAfterMove: positionAfterMove,
+    position: position,
+    player: piece[0] === "w" ? "b" : "w",
+  });
+
+  if (mated) note += "#";
+  else if (checked) note += "+";
 
   return note;
 };
